@@ -1,0 +1,49 @@
+* {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+* {
+  font-family: 'Helvetica Neue', HelveticaNeue, Helvetica, Arial, 'Lucida Grande', sans-serif;
+  font-size: 24pt;
+  text-rendering: optimizeLegibility;
+}
+a {
+  font-weight: bold;
+  color: grey;
+}
+.red {
+  color: #FE4365;
+}
+.green {
+  color: #7FAF1B;
+}
+.blue {
+  color: #025D8C;
+}
+.route {
+  font-weight: bold;
+}
+.time {
+  font-weight: bold;
+}
+#when ul {
+  display: inline;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#when li {
+  display: inline;
+}
+#when li:after {
+  content: ", ";
+}
+#when li:last-child:after {
+  content: "";
+}
+#next ul {
+  list-style: none;
+  margin: 0;
+  padding: 0.2em 0;
+}
