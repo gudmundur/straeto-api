@@ -34,16 +34,11 @@ connection = mongoose.createConnection(env?.MONGO_URL or 'mongodb://localhost/bu
  
 @stop = (stopId, date, callback) -> 
     # TODO
-    # 1. Find all trips that stop at this stop
-    # 2. Group by route
-    # 3. Extract times
-
     # a) Auxiliary function for decoding date to bus weekday (with holidays)
 
-    Trip.find { 'trip.stop.stopId': stopId, 'days': 'mon' }, (err, trips) ->
-        routes = Hash _(trips).groupBy (trip) -> trip.route
-        mapped = routes.map (trips, route) -> 
-            route: route
-            times: (_(trips).map (trip) -> (_(trip.trip).find (t) -> t.stop.stopId is stopId).time).sort()
+    StopTimes.find { 'stop.stopId': stopId, days: 'mon' }, (err, stopTimes) ->
+        mapped = (_ stopTimes).map (st) ->
+            route: st.route
+            times: st.times
 
-        callback null, mapped.values 
+        callback null, mapped
