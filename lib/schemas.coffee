@@ -29,6 +29,17 @@ TripSchema = new mongoose.Schema
     days: [String]
     trip: [StopTimeTuple]
 
+StopTimesSchema = new mongoose.Schema
+    route: Number
+    days: [String]
+    stop: 
+       stopId: String
+       longName: String
+       shortName: String
+       location: [Number]
+    times: [String]
+    source: String
+
 ScrapedRouteSchema = new mongoose.Schema
     route: Number
     name: String
@@ -52,6 +63,7 @@ exports.createSchemas = (connection) ->
     Stop: connection.model 'Stop', StopSchema
     Route: connection.model 'Route', RouteSchema
     Trip: connection.model 'Trip', TripSchema
+    StopTimes: connection.model 'StopTimes', StopTimesSchema
     ScrapedRoute: connection.model 'ScrapedRoute', ScrapedRouteSchema
     ScrapedTrip: connection.model 'ScrapedTrip', ScrapedTripSchema
  
