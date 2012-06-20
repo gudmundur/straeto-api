@@ -30,19 +30,34 @@ vows.describe('api').addBatch
             api.stop '90000162', new Date(), @callback
             return
 
+        'that *no* error occurred': (err, stop) -> assert.isNull err
         'only route 12 stops': (err, stop) ->
-            assert.isNull err
-            assert.lengthOf stop, 1
-            assert.equal stop[0].route, 12
+            assert.lengthOf stop.routes, 1
+            assert.equal stop.routes[0].route, 12
 
     'when querying for MR':
         topic: ->
             api.stop '90000004', new Date(), @callback
             return
 
+        'that *no* error occurred': (err, stop) -> assert.isNull err
         'that 7 different routes stop': (err, stop) ->
-            assert.isNull err
-            assert.lengthOf stop, 7
+            assert.lengthOf stop.routes, 7
+
+    'when querying for Hlemmur':
+        topic: ->
+            api.stop '90000295', new Date(), @callback
+            return
+
+        'that *no* error occurred': (err, stop) -> assert.isNull err
+        'that route 6 has 3 different end stops': (err, stop) ->
+            route = (s for s in stop.routes when s.route == 6)
+            assert.lengthOf route, 3
+
+        'that 14 different routes stop in both directions (all in all 29)': (err, stop) ->
+            assert.lengthOf stop.routes, 29
+
+
 
 
 .export module

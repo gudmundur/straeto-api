@@ -10,8 +10,6 @@ connection = mongoose.createConnection(env?.MONGO_URL or 'mongodb://localhost/bu
 
 @nearest = (latitude, longitude, callback) ->
     Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.004 } }, (err, stops) -> 
-        console.log stops
-
         callback null, [
             {
                 stop: {}
@@ -35,10 +33,21 @@ connection = mongoose.createConnection(env?.MONGO_URL or 'mongodb://localhost/bu
 @stop = (stopId, date, callback) -> 
     # TODO
     # a) Auxiliary function for decoding date to bus weekday (with holidays)
+    Stop.findOne { stopId: stopId }, (err, stop) ->
+        unless stop
+            callback new Error 'This bus stop doesn\'t exist'
+            return
 
-    StopTimes.find { 'stop.stopId': stopId, days: 'mon' }, (err, stopTimes) ->
-        mapped = (_ stopTimes).map (st) ->
-            route: st.route
-            times: st.times
+        StopTimes.find { 'stop.stopId': stopId, days: 'mon' }, (err, stopTimes) ->
+            mapped = (_ stopTimes).map (st) ->
+                endStop = st.endStop.toObject()
+                delete endStop['_id']
 
-        callback null, mapped
+                route: Number st.route
+                times: st.times
+                source: st.source
+                endStop: endStop
+
+            callback null,
+                stop: stop
+                routes: mapped

@@ -29,14 +29,17 @@ TripSchema = new mongoose.Schema
     days: [String]
     trip: [StopTimeTuple]
 
+StopEmbeddedSchema =
+    stopId: String
+    longName: String
+    shortName: String
+    location: [Number]
+
 StopTimesSchema = new mongoose.Schema
     route: Number
     days: [String]
-    stop: 
-       stopId: String
-       longName: String
-       shortName: String
-       location: [Number]
+    stop: StopEmbeddedSchema
+    endStop: StopEmbeddedSchema
     times: [String]
     source: String
 
