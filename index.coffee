@@ -13,15 +13,19 @@ app.use express.static(__dirname + '/public')
 app.set 'view engine', 'jade'
 app.enable 'jsonp callback'
 
+    
+app.get '/api/stops/:id', (req, res) ->
+    api.stop req.params.id, new Date(), (err, stop) -> 
+        if err
+            res.send 404
+            return
+
+        res.json stop
+
+# TODO: Rename this to /api/stops?near=latlng
 app.get '/api/nearest', (req, res) ->
     { latitude, longitude } = req.query
-    api.nearest latitude, longitude, (err, nearest) -> console.log nearest
-    res.json [
-            { route: 12, color: 'green' },
-            { route: 1, color: 'red' },
-            { route: 2, color: 'red' },
-            { route: 11, color: 'green' }
-        ]
+    api.nearest latitude, longitude, (err, nearest) -> res.json nearest
 
 # Listen
 port = env?.PORT or 3000

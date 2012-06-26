@@ -7,14 +7,24 @@ api     = require '../lib/api'
 vows.describe('api').addBatch 
     'when at Austurvöllur':
         topic: ->
-            someday = moment() # TODO point of time for test
-            api.nearest someday, 64.14753259999999, -21.9385416, @callback
+            api.nearest 64.14753259999999, -21.9385416, @callback
             return
 
         'the nearest stops are MR, Ráðhúsið and Lækjartorg': (err, nearest) ->
-            #console.log nearest
+            stops = (n.shortName for n in nearest)
+            assert.include stops, 'MR'
+            assert.include stops, 'Lækjartorg'
 
-        'the busses that stop there are ...': (err, nearest) ->
+    'when near Laugarnestangi':
+        topic: ->
+            api.nearest 64.151094, -21.881762, @callback
+            return
+
+        'the nearest stops contains Laugarnestangi, Héðinsgata and Kirkjusandur': (err, nearest) ->
+            stops = (n.shortName for n in nearest)
+            assert.include stops, 'Laugarnestangi'
+            assert.include stops, 'Héðinsgata'
+            assert.include stops, 'Kirkjusandur'
 
     'when querying for a non existing stop':
         topic: ->

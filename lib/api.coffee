@@ -10,25 +10,10 @@ connection = mongoose.createConnection(env?.MONGO_URL or 'mongodb://localhost/bu
 
 @nearest = (latitude, longitude, callback) ->
     Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.004 } }, (err, stops) -> 
-        callback null, [
-            {
-                stop: {}
-                routes: [
-                    {
-                        route: 12
-                        color: 'green'
-
-                        startstop: 'Ártún'
-                        endstop: 'Skeljanes'
-                        times: []
-                    }
-                ]
-            }
-        ]
-
-        # TODO
-        # 1. Which busses stop at these stops? db.trips.find({ "trip.stop.stopId": "90000184"})
-        # 2. At what times are they?
+        callback null, (_ stops).map (s) ->
+            stop = s.toObject()
+            delete stop['_id']
+            return stop
  
 @stop = (stopId, date, callback) -> 
     # TODO
