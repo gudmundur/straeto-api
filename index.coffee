@@ -7,13 +7,13 @@ api     = require './lib/api'
 
 # Setup configuration
 app.use express.errorHandler { showStacktrace: true, dumpExceptions: true }
-app.use express.logger format: ':method :url'
+app.use express.logger format: ':method :url :remote-addr'
 app.use express.bodyParser()
 app.use express.static(__dirname + '/public')
 app.set 'view engine', 'jade'
 app.enable 'jsonp callback'
 
-    
+
 app.get '/api/stops/:id', (req, res) ->
     api.stop req.params.id, new Date(), (err, stop) -> 
         if err
@@ -21,6 +21,10 @@ app.get '/api/stops/:id', (req, res) ->
             return
 
         res.json stop
+
+app.get '/api/stops/', (req, res) ->
+    api.stops (err, stops) ->
+        res.json stops
 
 # TODO: Rename this to /api/stops?near=latlng
 app.get '/api/nearest', (req, res) ->

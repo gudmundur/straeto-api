@@ -1,2 +1,2 @@
-server: supervisor -q index.coffee
+server: supervisor index.coffee
 web: web/watch.sh

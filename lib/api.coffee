@@ -1,38 +1,45 @@
 mongoose = require 'mongoose'
 _        = require 'underscore'
-Hash     = require 'hashish'
 
 schemas  = require './schemas'
 
 connection = mongoose.createConnection(env?.MONGO_URL or 'mongodb://localhost/bus')
 
-{ Stop, Trip, StopTimes } = schemas.createSchemas connection
+{ Stop, StopTimes } = schemas.createSchemas connection
+
+dayOfWeek = (date) ->
+    # TODO
+    # a) Handling for holidays
+    weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+    weekdays[date.getDay()]
+
+transformStop = (s) ->
+    stop = s.toObject()
+    delete stop['_id']
+    return stop
+
+transformStopTimes = (st) ->
+    endStop = st.endStop.toObject()
+    delete endStop['_id']
+
+    route: Number st.route
+    times: st.times
+    source: st.source
+    endStop: endStop
 
 @nearest = (latitude, longitude, callback) ->
-    Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.004 } }, (err, stops) -> 
-        callback null, (_ stops).map (s) ->
-            stop = s.toObject()
-            delete stop['_id']
-            return stop
- 
+    Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.005 } }, (err, stops) -> 
+        callback null, (_ stops).map transformStop
+
+@stops = (callback) ->
+    Stop.find().asc('longName').exec (err, stops) ->
+        callback null, (_ stops).map transformStop
+
 @stop = (stopId, date, callback) -> 
-    # TODO
-    # a) Auxiliary function for decoding date to bus weekday (with holidays)
     Stop.findOne { stopId: stopId }, (err, stop) ->
         unless stop
             callback new Error 'This bus stop doesn\'t exist'
             return
 
-        StopTimes.find { 'stop.stopId': stopId, days: 'mon' }, (err, stopTimes) ->
-            mapped = (_ stopTimes).map (st) ->
-                endStop = st.endStop.toObject()
-                delete endStop['_id']
-
-                route: Number st.route
-                times: st.times
-                source: st.source
-                endStop: endStop
-
-            callback null,
-                stop: stop
-                routes: mapped
+        StopTimes.find { 'stop.stopId': stopId, days: dayOfWeek new Date }, (err, stopTimes) ->
+            callback null, (_ stopTimes).map transformStopTimes
