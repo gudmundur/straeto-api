@@ -1,5 +1,4 @@
 mongoose = require 'mongoose'
-_        = require 'underscore'
 
 schemas  = require './schemas'
 
@@ -29,11 +28,11 @@ transformStopTimes = (st) ->
 
 @nearest = (latitude, longitude, callback) ->
     Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.005 } }, (err, stops) -> 
-        callback null, (_ stops).map transformStop
+        callback null, stops.map transformStop
 
 @stops = (callback) ->
-    Stop.find().asc('longName').exec (err, stops) ->
-        callback null, (_ stops).map transformStop
+    Stop.find().sort('longName', 'ascending').exec (err, stops) ->
+        callback null, stops.map transformStop
 
 @stop = (stopId, date, callback) -> 
     Stop.findOne { stopId: stopId }, (err, stop) ->
@@ -41,5 +40,5 @@ transformStopTimes = (st) ->
             callback new Error 'This bus stop doesn\'t exist'
             return
 
-        StopTimes.find { 'stop.stopId': stopId, days: dayOfWeek new Date }, (err, stopTimes) ->
-            callback null, (_ stopTimes).map transformStopTimes
+        StopTimes.find { 'stop.stopId': stopId, days: dayOfWeek date }, (err, stopTimes) ->
+            callback null, stopTimes.map transformStopTimes

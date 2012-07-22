@@ -4,6 +4,8 @@ moment  = require 'moment'
 
 api     = require '../lib/api'
 
+dateMonday = new Date 2012, 6, 23
+
 vows.describe('api').addBatch 
     'when at Austurvöllur':
         topic: ->
@@ -36,7 +38,7 @@ vows.describe('api').addBatch
 
     'when querying for a non existing stop':
         topic: ->
-            api.stop '123', new Date(), @callback
+            api.stop '123', dateMonday, @callback
             return
     
         'an error is returned': (err, stop) ->
@@ -45,7 +47,7 @@ vows.describe('api').addBatch
 
     'when querying for Laugarnestangi':
         topic: ->
-            api.stop '90000162', new Date(), @callback
+            api.stop '90000162', dateMonday, @callback
             return
 
         'that *no* error occurred': (err, stop) -> assert.isNull err
@@ -55,7 +57,7 @@ vows.describe('api').addBatch
 
     'when querying for MR':
         topic: ->
-            api.stop '90000004', new Date(), @callback
+            api.stop '90000004', dateMonday, @callback
             return
 
         'that *no* error occurred': (err, stop) -> assert.isNull err
@@ -64,7 +66,7 @@ vows.describe('api').addBatch
 
     'when querying for Hlemmur':
         topic: ->
-            api.stop '90000295', new Date(), @callback
+            api.stop '90000295', dateMonday, @callback
             return
 
         'that *no* error occurred': (err, stop) -> assert.isNull err
@@ -74,8 +76,5 @@ vows.describe('api').addBatch
 
         'that 14 different routes stop in both directions (all in all 29)': (err, stop) ->
             assert.lengthOf stop, 29
-
-
-
 
 .export module

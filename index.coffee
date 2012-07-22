@@ -33,5 +33,5 @@ app.get '/api/nearest', (req, res) ->
 
 # Listen
 port = env?.PORT or 3000
-app.listen port 
+app.listen port
 console.log "Express server listening on port #{port}"
