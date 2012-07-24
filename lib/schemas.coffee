@@ -61,6 +61,7 @@ ScrapedTripSchema = new mongoose.Schema
 
 RouteSchema.index { route: 1, from: 1, to: 1, variant: 1 }, { unique: true }
 TripSchema.index { "trip.0.time": 1 }
+StopSchema.index { location: "2d" }
 
 exports.createSchemas = (connection) ->
     Stop: connection.model 'Stop', StopSchema
