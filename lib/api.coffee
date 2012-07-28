@@ -1,4 +1,6 @@
 mongoose = require 'mongoose'
+async    = require 'async'
+_        = require 'underscore'
 
 schemas  = require './schemas'
 
@@ -29,6 +31,26 @@ transformStopTimes = (st) ->
 @nearest = (latitude, longitude, callback) ->
     Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.005 } }, (err, stops) -> 
         callback null, stops.map transformStop
+
+@nearestRoutes = (latitude, longitude, date, callback) ->
+    @nearest latitude, longitude, (err, stops) ->
+        stopTimes = (stop, callback) ->
+            module.exports.stop stop.stopId, date, (err, times) ->
+                times.forEach (t) -> t.stop = stop
+                callback err, times
+
+        async.map stops, stopTimes, (err, times) ->
+            mergeNearest = (a, b) ->
+                b.forEach (t) ->
+                    key = "#{t.route}-#{t.endStop.stopId}"
+                    unless (_ a.seen).has key
+                        a.seen[key] = true
+                        a.routes.push t
+
+                return a
+
+            res = times.reduce mergeNearest, { seen: {}, routes: [] }
+            callback null, res.routes
 
 @stops = (callback) ->
     Stop.find().sort('longName', 'ascending').exec (err, stops) ->

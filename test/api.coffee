@@ -77,4 +77,14 @@ vows.describe('api').addBatch
         'that 14 different routes stop in both directions (all in all 29)': (err, stop) ->
             assert.lengthOf stop, 29
 
+
+    'when querying for nearest busses at home':
+        topic: ->
+            api.nearestRoutes 64.13205119999999, -21.9098598, dateMonday, @callback
+            return
+
+        'it returns routes 13 and 18': (err, routes) ->
+            console.log err
+            console.log routes
+
 .export module
