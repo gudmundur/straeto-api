@@ -20,37 +20,33 @@ transformStop = (s) ->
     return stop
 
 transformStopTimes = (st) ->
-    endStop = st.endStop.toObject()
-    delete endStop['_id']
+    endStop = transformStop st.endStop
+    stop = transformStop st.stop
 
     route: Number st.route
     times: st.times
     source: st.source
     endStop: endStop
+    stop: stop
 
 @nearest = (latitude, longitude, callback) ->
     Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.005 } }, (err, stops) -> 
         callback null, stops.map transformStop
 
 @nearestRoutes = (latitude, longitude, date, callback) ->
-    @nearest latitude, longitude, (err, stops) ->
-        stopTimes = (stop, callback) ->
-            module.exports.stop stop.stopId, date, (err, times) ->
-                times.forEach (t) -> t.stop = stop
-                callback err, times
+    StopTimes.find { 'stop.location': { $near: [latitude, longitude], $maxDistance: 0.005 }, days: dayOfWeek date }, (err, times) -> 
+        mergeNearest = (a, b) ->
+            key = "#{b.route}-#{b.endStop.stopId}"
+            unless (_ a.seen).has key
+                a.seen[key] = true
+                a.routes.push b
 
-        async.map stops, stopTimes, (err, times) ->
-            mergeNearest = (a, b) ->
-                b.forEach (t) ->
-                    key = "#{t.route}-#{t.endStop.stopId}"
-                    unless (_ a.seen).has key
-                        a.seen[key] = true
-                        a.routes.push t
+            return a
 
-                return a
+        times = times.map transformStopTimes
 
-            res = times.reduce mergeNearest, { seen: {}, routes: [] }
-            callback null, res.routes
+        res = times.reduce mergeNearest, { seen: {}, routes: [] }
+        callback null, res.routes
 
 @stops = (callback) ->
     Stop.find().sort('longName', 'ascending').exec (err, stops) ->
