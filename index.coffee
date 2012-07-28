@@ -31,6 +31,11 @@ app.get '/api/nearest', (req, res) ->
     { latitude, longitude } = req.query
     api.nearest latitude, longitude, (err, nearest) -> res.json nearest
 
+app.get '/api/busses', (req, res) ->
+    { latitude, longitude } = req.query
+    api.nearestRoutes latitude, longitude, new Date, (err, times) ->
+        res.json times
+
 # Listen
 port = env?.PORT or 3000
 app.listen port
