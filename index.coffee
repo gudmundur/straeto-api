@@ -15,7 +15,7 @@ app.enable 'jsonp callback'
 
 
 app.get '/api/stops/:id', (req, res) ->
-    api.stop req.params.id, new Date(), (err, stop) -> 
+    api.stop req.params.id, new Date, (err, stop) ->
         if err
             res.send 404
             return
