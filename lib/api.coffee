@@ -30,16 +30,12 @@ transformStopTimes = (timeFilter) -> (st) ->
     endStop: endStop
     stop: stop
 
-createTimeFilter = (date, options={}) ->
-    from = moment(date).clone().subtract('minutes', 15)
-    to = moment(date).clone().add('hours', 1)
-
-    console.log from
-    console.log to
+createTimeFilter = (options={}) ->
+    { from, to }  = options
 
     toTime = (t) ->
         [h, m] = t.split ':'
-        time = moment date
+        time = from.clone()
         time.hours(h).minutes(m)
         if h is '00'
             time.add 'days', 1
@@ -48,12 +44,17 @@ createTimeFilter = (date, options={}) ->
 
     (t) -> from < (toTime t) < to
 
-
 @nearest = (latitude, longitude, callback) ->
     Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.005 } }, (err, stops) -> 
         callback null, stops.map transformStop
 
-@nearestRoutes = (latitude, longitude, date, callback) ->
+@nearestRoutes = (latitude, longitude, options, callback) ->
+    opts = _.defaults options,
+        from: moment().startOf 'day'
+        to: moment().endOf('day').add('hours', 2)
+
+    date = opts.from.toDate()
+
     StopTimes.find { 'stop.location': { $near: [latitude, longitude], $maxDistance: 0.005 }, days: dayOfWeek date }, (err, times) -> 
         mergeNearest = (a, b) ->
             key = "#{b.route}-#{b.endStop.stopId}"
@@ -63,8 +64,7 @@ createTimeFilter = (date, options={}) ->
 
             return a
 
-
-        times = times.map transformStopTimes createTimeFilter(date)
+        times = times.map transformStopTimes createTimeFilter(opts)
 
         res = times.reduce mergeNearest, { seen: {}, routes: [] }
         callback null, res.routes
@@ -73,11 +73,17 @@ createTimeFilter = (date, options={}) ->
     Stop.find().sort('longName', 'ascending').exec (err, stops) ->
         callback null, stops.map transformStop
 
-@stop = (stopId, date, callback) -> 
+@stop = (stopId, options, callback) ->
+    opts = _.defaults options,
+        from: moment().startOf 'day'
+        to: moment().endOf('day').add('hours', 2)
+
+    date = opts.from.toDate()
+
     Stop.findOne { stopId: stopId }, (err, stop) ->
         unless stop
             callback new Error 'This bus stop doesn\'t exist'
             return
 
         StopTimes.find { 'stop.stopId': stopId, days: dayOfWeek date }, (err, stopTimes) ->
-            callback null, stopTimes.map transformStopTimes createTimeFilter(date)
+            callback null, stopTimes.map transformStopTimes createTimeFilter(opts)

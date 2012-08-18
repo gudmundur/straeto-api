@@ -87,7 +87,9 @@ importFromScraper = (callback)->
 
         st.save()
           
-    routes.on 'end', -> callback null
+    routes.on 'end', ->
+        routes.removeAllListeners()
+        callback null
 
     routes.scrape()
 
