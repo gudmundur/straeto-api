@@ -9,6 +9,8 @@ connection = mongoose.createConnection(env?.MONGO_URL or 'mongodb://localhost/bu
 
 { Stop, StopTimes } = schemas.createSchemas connection
 
+EARTH_RADIUS = 6367.5 # Mean radius for Iceland in km
+
 dayOfWeek = (date) ->
     # TODO
     # a) Handling for holidays
@@ -17,6 +19,8 @@ dayOfWeek = (date) ->
 
 transformStop = (s) ->
     stop = s.toObject()
+    [lng, lat] = stop.location
+    stop.location = [lat, lng]
     delete stop['_id']
     return stop
 
@@ -44,18 +48,25 @@ createTimeFilter = (options={}) ->
 
     (t) -> from < (toTime t) < to
 
-@nearest = (latitude, longitude, callback) ->
-    Stop.find { location: { $near: [latitude, longitude], $maxDistance: 0.005 } }, (err, stops) -> 
+@nearest = (latitude, longitude, options, callback) ->
+    opts = _.defaults options,
+        radius: 500 # meters
+
+    distance = (opts.radius / 1000) / EARTH_RADIUS
+
+    Stop.find { location: { $nearSphere: [longitude, latitude], $maxDistance: distance } }, (err, stops) ->
         callback null, stops.map transformStop
 
 @nearestRoutes = (latitude, longitude, options, callback) ->
     opts = _.defaults options,
         from: moment().startOf 'day'
         to: moment().endOf('day').add('hours', 2)
+        radius: 500 # meters
 
     date = opts.from.toDate()
+    distance = (opts.radius / 1000) / EARTH_RADIUS
 
-    StopTimes.find { 'stop.location': { $near: [latitude, longitude], $maxDistance: 0.005 }, days: dayOfWeek date }, (err, times) -> 
+    StopTimes.find { 'stop.location': { $nearSphere: [longitude, latitude], $maxDistance: distance }, days: dayOfWeek date }, (err, times) ->
         mergeNearest = (a, b) ->
             key = "#{b.route}-#{b.endStop.stopId}"
             unless (_ a.seen).has key

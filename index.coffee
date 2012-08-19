@@ -50,12 +50,13 @@ app.get '/api/stops/', (req, res) ->
 # TODO: Rename this to /api/stops?near=latlng
 app.get '/api/nearest', (req, res) ->
     { latitude, longitude } = req.query
-    api.nearest latitude, longitude, (err, nearest) -> res.json nearest
+    radius = req.query.radius or 500
+    api.nearest latitude, longitude, { radius: radius }, (err, nearest) -> res.json nearest
 
 app.get '/api/busses', (req, res) ->
     { latitude, longitude } = req.query
-
     options = buildOptions req
+    options.radius = req.query.radius or 500
 
     api.nearestRoutes latitude, longitude, options, (err, times) ->
         res.json times

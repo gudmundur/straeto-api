@@ -24,7 +24,7 @@ importStops = (file, callback) ->
             stopId: stopId
             longName: longName
             shortName: shortName
-            location: [latitude, longitude]
+            location: [longitude, latitude]
 
         s.save()
 

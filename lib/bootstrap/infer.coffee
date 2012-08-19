@@ -33,10 +33,10 @@ pair = (list) ->
     
     return pairs
 
-toLatLng = (a) -> { latitude: a[0], longitude: a[1] }
+toLngLat = (a) -> { latitude: a[1], longitude: a[0] }
 distBetweenStops = (a, b) -> 
     return 0 if a is null or b is null
-    geolib.getDistance toLatLng(a.location), toLatLng(b.location)
+    geolib.getDistance toLngLat(a.location), toLngLat(b.location)
 
 createSegments = (knownTimes) ->
     createSegment = ([start, end]) ->
