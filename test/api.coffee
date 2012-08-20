@@ -4,12 +4,14 @@ moment  = require 'moment'
 
 api     = require '../lib/api'
 
-dateMonday = new Date 2012, 6, 23
+dateMonday =
+    from: moment('2012-08-13T00')
+    to: moment('2012-08-13T23:59:59')
 
 vows.describe('api').addBatch 
     'when at Austurvöllur':
         topic: ->
-            api.nearest 64.14753259999999, -21.9385416, @callback
+            api.nearest 64.14753259999999, -21.9385416, {}, @callback
             return
 
         'the nearest stops are MR, Ráðhúsið and Lækjartorg': (err, nearest) ->
@@ -19,7 +21,7 @@ vows.describe('api').addBatch
 
     'when near Laugarnestangi':
         topic: ->
-            api.nearest 64.151094, -21.881762, @callback
+            api.nearest 64.151094, -21.881762, {}, @callback
             return
 
         'the nearest stops contains Laugarnestangi, Héðinsgata and Kirkjusandur': (err, nearest) ->
@@ -38,7 +40,7 @@ vows.describe('api').addBatch
 
     'when querying for a non existing stop':
         topic: ->
-            api.stop '123', dateMonday, @callback
+            api.stop '123', {}, @callback
             return
     
         'an error is returned': (err, stop) ->
@@ -84,7 +86,8 @@ vows.describe('api').addBatch
             return
 
         'it returns routes 13 and 18': (err, routes) ->
-            console.log err
-            console.log routes
+            rs = routes.map (r) -> r.route
+            assert.include rs, 13
+            assert.include rs, 18
 
 .export module
