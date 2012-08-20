@@ -67,18 +67,7 @@ createTimeFilter = (options={}) ->
     distance = (opts.radius / 1000) / EARTH_RADIUS
 
     StopTimes.find { 'stop.location': { $nearSphere: [longitude, latitude], $maxDistance: distance }, days: dayOfWeek date }, (err, times) ->
-        mergeNearest = (a, b) ->
-            key = "#{b.route}-#{b.endStop.stopId}"
-            unless (_ a.seen).has key
-                a.seen[key] = true
-                a.routes.push b
-
-            return a
-
-        times = times.map transformStopTimes createTimeFilter(opts)
-
-        res = times.reduce mergeNearest, { seen: {}, routes: [] }
-        callback null, res.routes
+        callback null, times.map transformStopTimes createTimeFilter(opts)
 
 @stops = (callback) ->
     Stop.find().sort('longName', 'ascending').exec (err, stops) ->

@@ -1,6 +1,7 @@
 vows    = require 'vows'
 assert  = require 'assert'
 moment  = require 'moment'
+_       = require 'underscore'
 
 api     = require '../lib/api'
 
@@ -82,7 +83,8 @@ vows.describe('api').addBatch
 
     'when querying for nearest busses at home':
         topic: ->
-            api.nearestRoutes 64.13205119999999, -21.9098598, dateMonday, @callback
+            opts = _.defaults dateMonday, { radius: 350 }
+            api.nearestRoutes 64.13205119999999, -21.9098598, opts, @callback
             return
 
         'it returns routes 13 and 18': (err, routes) ->
