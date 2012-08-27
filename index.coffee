@@ -33,7 +33,7 @@ buildOptions = (req) ->
     to: if to then moment to else moment().endOf('day').add 'hours', 2
 
 
-app.get '/api/stops/:id', (req, res) ->
+app.get '/stops/:id', (req, res) ->
     options = buildOptions req
 
     api.stop req.params.id, options, (err, stop) ->
@@ -43,17 +43,17 @@ app.get '/api/stops/:id', (req, res) ->
 
         res.json stop
 
-app.get '/api/stops/', (req, res) ->
+app.get '/stops/', (req, res) ->
     api.stops (err, stops) ->
         res.json stops
 
-# TODO: Rename this to /api/stops?near=latlng
-app.get '/api/nearest', (req, res) ->
+# TODO: Rename this to /stops?near=latlng
+app.get '/nearest', (req, res) ->
     { latitude, longitude } = req.query
     radius = req.query.radius or 500
     api.nearest latitude, longitude, { radius: radius }, (err, nearest) -> res.json nearest
 
-app.get '/api/busses', (req, res) ->
+app.get '/buses', (req, res) ->
     { latitude, longitude } = req.query
     options = buildOptions req
     options.radius = req.query.radius or 500
