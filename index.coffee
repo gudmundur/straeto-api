@@ -9,7 +9,7 @@ api     = require './lib/api'
 
 # Setup configuration
 app.use express.errorHandler { showStacktrace: true, dumpExceptions: true }
-app.use express.logger format: ':method :url :remote-addr'
+app.use express.logger 'dev'
 app.use express.bodyParser()
 app.use express.static(__dirname + '/public')
 app.set 'view engine', 'jade'
@@ -32,6 +32,9 @@ buildOptions = (req) ->
     from: if from then moment from else moment().startOf 'day'
     to: if to then moment to else moment().endOf('day').add 'hours', 2
 
+app.all '*', (req, res, next) ->
+    res.header 'Access-Control-Allow-Origin', '*'
+    next()
 
 app.get '/stops/:id', (req, res) ->
     options = buildOptions req

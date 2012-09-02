@@ -67,7 +67,7 @@ createTimeFilter = (options={}) ->
     distance = (opts.radius / 1000) / EARTH_RADIUS
 
     StopTimes.find { 'stop.location': { $nearSphere: [longitude, latitude], $maxDistance: distance }, days: dayOfWeek date }, (err, times) ->
-        callback null, times.map transformStopTimes createTimeFilter(opts)
+        callback null, _(times).chain().map(transformStopTimes createTimeFilter(opts)).filter((t) -> t.times.length > 0).value()
 
 @stops = (callback) ->
     Stop.find().sort('longName', 'ascending').exec (err, stops) ->
