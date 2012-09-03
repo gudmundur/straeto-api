@@ -1,9 +1,8 @@
 express = require 'express'
 app     = express.createServer()
+env     = process.env
 
 moment  = require 'moment'
-
-env     = process.env
 
 api     = require './lib/api'
 
@@ -32,14 +31,26 @@ buildOptions = (req) ->
     from: if from then moment from else moment().startOf 'day'
     to: if to then moment to else moment().endOf('day').add 'hours', 2
 
+
+timeRange = (req, res, next) ->
+    { from, to } = buildOptions req
+    req.params.from = from
+    req.params.to = to
+    next()
+
+location = (req, res, next) ->
+    { latitude, longitude, radius } = req.query
+    req.params.latitude = latitude
+    req.params.longitude = longitude
+    req.params.radius = radius or 500
+    next()
+
 app.all '*', (req, res, next) ->
     res.header 'Access-Control-Allow-Origin', '*'
     next()
 
-app.get '/stops/:id', (req, res) ->
-    options = buildOptions req
-
-    api.stop req.params.id, options, (err, stop) ->
+app.get '/stops/:id', timeRange, (req, res) ->
+    api.stop req.params.id, req.params, (err, stop) ->
         if err
             res.send 404
             return
@@ -51,17 +62,11 @@ app.get '/stops/', (req, res) ->
         res.json stops
 
 # TODO: Rename this to /stops?near=latlng
-app.get '/nearest', (req, res) ->
-    { latitude, longitude } = req.query
-    radius = req.query.radius or 500
-    api.nearest latitude, longitude, { radius: radius }, (err, nearest) -> res.json nearest
+app.get '/nearest', location, (req, res) ->
+    api.nearest req.params.latitude, req.params.longitude, { radius: req.params.radius }, (err, nearest) -> res.json nearest
 
-app.get '/buses', (req, res) ->
-    { latitude, longitude } = req.query
-    options = buildOptions req
-    options.radius = req.query.radius or 500
-
-    api.nearestRoutes latitude, longitude, options, (err, times) ->
+app.get '/buses', [location, timeRange], (req, res) ->
+    api.nearestRoutes req.params.latitude, req.params.longitude, req.params, (err, times) ->
         res.json times
 
 # Listen
