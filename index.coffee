@@ -63,7 +63,8 @@ app.get '/stops/', (req, res) ->
 
 # TODO: Rename this to /stops?near=latlng
 app.get '/nearest', location, (req, res) ->
-    api.nearest req.params.latitude, req.params.longitude, { radius: req.params.radius }, (err, nearest) -> res.json nearest
+    api.nearest req.params.latitude, req.params.longitude, { radius: req.params.radius }, (err, nearest) ->
+        res.json nearest
 
 app.get '/buses', [location, timeRange], (req, res) ->
     api.nearestRoutes req.params.latitude, req.params.longitude, req.params, (err, times) ->
