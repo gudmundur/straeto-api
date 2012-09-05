@@ -23,6 +23,11 @@ buildOptions = (req) ->
             to: moment().add 'hours', 1
         }
 
+        when 'restOfDay' then return {
+            from: moment().subtract 'minutes', 15
+            to: moment().endOf('day').add 'hours', 2
+        }
+
         when 'day' then return {
             from: moment().startOf 'day'
             to: moment().endOf('day').add 'hours', 2
