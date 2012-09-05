@@ -24,7 +24,18 @@ reduceF = (key, values) ->
         times = v.times.concat times
 
     return { times: times, source: v.source }
-finalizeF = (key, value) -> { times: value.times.sort(), source: value.source }
+finalizeF = (key, value) ->
+    time = (hm) ->
+        d = new Date
+        [h, m] = hm.split ':'
+        hs = Number h
+        d.setHours if hs < 3 then (h+24) else h
+        d.setMinutes Number m
+        return d
+
+    cmp = (a, b) -> (time a) > (time b)
+
+    times: value.times.sort(cmp), source: value.source
 
 mapData = (data, callback) ->
     { _id: {stop, route, endStop, days}, value: {times, source} } = data
