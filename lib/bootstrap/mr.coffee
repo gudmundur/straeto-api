@@ -33,7 +33,13 @@ finalizeF = (key, value) ->
         d.setMinutes Number m
         return d
 
-    cmp = (a, b) -> (time a) > (time b)
+    cmp = (a, b) ->
+        ta = time a
+        tb = time b
+
+        return -1 if ta < tb
+        return 1  if ta > tb
+        return 0
 
     times: value.times.sort(cmp), source: value.source
 
@@ -53,14 +59,15 @@ mapData = (data, callback) ->
  
 
 StopTimes.collection.drop ->
-    Trip.collection.mapReduce mapF.toString(), reduceF.toString(), { finalize: finalizeF.toString(), out: 'byStop' }, (err, res) ->
-        console.log err if err
-    
-        connection.db.collection 'byStop', (err, byStop) ->
+    (connection.db.collection 'byStop').drop ->
+        Trip.collection.mapReduce mapF.toString(), reduceF.toString(), { finalize: finalizeF.toString(), out: 'byStop' }, (err, res) ->
             console.log err if err
-            byStop.find().toArray (err, data) -> 
-                console.log err if err
 
-                async.map data, mapData, (err, res) ->
-                    connection.close()
+            connection.db.collection 'byStop', (err, byStop) ->
+                console.log err if err
+                byStop.find().toArray (err, data) ->
+                    console.log err if err
+
+                    async.map data, mapData, (err, res) ->
+                        connection.close()
 
