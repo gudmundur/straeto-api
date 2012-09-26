@@ -60,6 +60,7 @@ ScrapedTripSchema = new mongoose.Schema
     signature: String
 
 RouteSchema.index { route: 1, from: 1, to: 1, variant: 1 }, { unique: true }
+RouteSchema.index { 'stops.location': '2d' }
 TripSchema.index { "trip.0.time": 1 }
 StopSchema.index { location: "2d" }
 StopSchema.index { longName: 1 }

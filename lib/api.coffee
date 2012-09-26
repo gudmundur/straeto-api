@@ -7,7 +7,7 @@ schemas  = require './schemas'
 
 connection = mongoose.createConnection(env?.MONGO_URL or 'mongodb://localhost/bus')
 
-{ Stop, StopTimes } = schemas.createSchemas connection
+{ Route, Stop, StopTimes } = schemas.createSchemas connection
 
 EARTH_RADIUS = 6367.5 # Mean radius for Iceland in km
 
@@ -87,3 +87,34 @@ createTimeFilter = (options={}) ->
 
         StopTimes.find { 'stop.stopId': stopId, days: dayOfWeek date }, (err, stopTimes) ->
             callback null, stopTimes.map transformStopTimes createTimeFilter(opts)
+
+@between = (from, to, callback) ->
+    radius = 500
+    distance = (radius / 1000) / EARTH_RADIUS
+
+    routes = (l) -> (callback) -> Route.find { "stops.location": { $nearSphere: [l.longitude, l.latitude], $maxDistance: distance } }, callback
+    stops = (l) -> (callback) -> Stop.find { location: { $nearSphere: [l.longitude, l.latitude], $maxDistance: distance } }, callback
+
+    async.parallel { fromRoutes: routes(from), fromStops: stops(from), to: stops(to) }, (err, res) ->
+        uniqueRoutes = (_ res.fromRoutes).uniq false, (r) -> r.id
+
+        fromStopIds = (_ res.fromStops).map (s) -> s.stopId
+        toStopIds = (_ res.to).map (s) -> s.stopId
+
+        routes = (_ uniqueRoutes).map (r) ->
+            stopIds = (_ r.stops).map (s) -> s.stopId
+
+            fromStop = (_ fromStopIds).find (s) -> s in stopIds 
+            toStop = (_ toStopIds).find (s) -> s in stopIds
+
+            fromIdx = stopIds.indexOf fromStop
+            toIdx = stopIds.indexOf toStop
+
+            route: r
+            fromStop: r.stops[fromIdx]
+            toStop: r.stops[toIdx]
+            fromIdx: fromIdx
+            toIdx: toIdx
+
+        callback undefined, (_ routes).filter (r) -> r.fromIdx < r.toIdx
+

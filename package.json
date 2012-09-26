@@ -15,7 +15,12 @@
     "csv": "0.0.17"
   },
   "devDependencies": {
-    "vows": "0.6.3"
+    "vows": "0.6.3",
+
+    "mocha": "1.4.1",
+    "chai": "1.2.0",
+    "sinon": "1.4.2",
+    "sinon-chai": "2.1.2"
   },
   "engines": {
     "node": "0.8.x"
