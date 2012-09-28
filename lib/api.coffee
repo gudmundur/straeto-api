@@ -73,7 +73,7 @@ createTimeFilter = (options={}) ->
     Stop.find().sort('longName', 'ascending').exec (err, stops) ->
         callback null, stops.map transformStop
 
-@stop = (stopId, options, callback) ->
+stoppedyStop = @stop = (stopId, options, callback) ->
     opts = _.defaults options,
         from: moment().startOf 'day'
         to: moment().endOf('day').add('hours', 2)
@@ -88,18 +88,34 @@ createTimeFilter = (options={}) ->
         StopTimes.find { 'stop.stopId': stopId, days: dayOfWeek date }, (err, stopTimes) ->
             callback null, stopTimes.map transformStopTimes createTimeFilter(opts)
 
-@between = (from, to, callback) ->
-    radius = 500
-    distance = (radius / 1000) / EARTH_RADIUS
+transformBetween = (r) ->
+    from = transformStop r.fromStop
+    to = transformStop r.toStop
+    endStop = transformStop (_ r.route.stops).last()
+
+    route: Number r.route.route
+    from: from
+    to: to
+    endStop: endStop
+
+@between = (from, to, options, callback) ->
+    if (_ options).isFunction()
+        callback = options
+        options = {}
+
+    opts = _.defaults options,
+        radius: 500 # meters
+
+    distance = (opts.radius / 1000) / EARTH_RADIUS
 
     routes = (l) -> (callback) -> Route.find { "stops.location": { $nearSphere: [l.longitude, l.latitude], $maxDistance: distance } }, callback
-    stops = (l) -> (callback) -> Stop.find { location: { $nearSphere: [l.longitude, l.latitude], $maxDistance: distance } }, callback
+    stops = (l) -> (callback) -> Stop.find { location: { $nearSphere: [l.longitude, l.latitude], $maxDistance: distance } }, 'stopId', callback
 
     async.parallel { fromRoutes: routes(from), fromStops: stops(from), to: stops(to) }, (err, res) ->
         uniqueRoutes = (_ res.fromRoutes).uniq false, (r) -> r.id
 
-        fromStopIds = (_ res.fromStops).map (s) -> s.stopId
-        toStopIds = (_ res.to).map (s) -> s.stopId
+        fromStopIds = (_ res.fromStops).pluck 'stopId'
+        toStopIds = (_ res.to).pluck 'stopId'
 
         routes = (_ uniqueRoutes).map (r) ->
             stopIds = (_ r.stops).map (s) -> s.stopId
@@ -116,5 +132,20 @@ createTimeFilter = (options={}) ->
             fromIdx: fromIdx
             toIdx: toIdx
 
-        callback undefined, (_ routes).filter (r) -> r.fromIdx < r.toIdx
+        callback undefined, (_ (_ routes).filter (r) -> r.fromIdx < r.toIdx).map transformBetween
 
+@betweenWithTimes = (from, to, options, callback) ->
+    if (_ options).isFunction()
+        callback = options
+        options = {}
+
+    process = (route, callback) ->
+        stoppedyStop route.from.stopId, {}, (err, stop) ->
+            times = (_ stop).find (r) -> r.route is route.route and r.endStop.stopId is route.endStop.stopId
+            route.times = times.times
+            route.source = times.source
+            callback undefined, route
+
+    @between from, to, options, (err, routes) ->
+        async.map routes, process, (err, routes) -> 
+            callback undefined, routes

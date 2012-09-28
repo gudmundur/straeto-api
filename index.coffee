@@ -75,6 +75,13 @@ app.get '/buses', [location, timeRange], (req, res) ->
     api.nearestRoutes req.params.latitude, req.params.longitude, req.params, (err, times) ->
         res.json times
 
+app.get '/between', (req, res) ->
+    from = req.query.from.split ','
+    to = req.query.to.split ','
+
+    api.betweenWithTimes { latitude: from[0], longitude: from[1] }, { latitude: to[0], longitude: to[1] }, (err, routes) ->
+        res.send routes
+
 # Listen
 port = env?.PORT or 3000
 app.listen port
