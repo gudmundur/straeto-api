@@ -129,6 +129,7 @@ inferTrip = (specs, trip, callback) ->
         t = new Trip
             route: trip.route
             routeFile: route.file
+            direction: trip.direction
             days: trip.days
             trip: inferred
 

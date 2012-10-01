@@ -26,6 +26,7 @@ StopTimeTuple = new mongoose.Schema
 TripSchema = new mongoose.Schema
     route: Number
     routeFile: String
+    direction: Number
     days: [String]
     trip: [StopTimeTuple]
 
