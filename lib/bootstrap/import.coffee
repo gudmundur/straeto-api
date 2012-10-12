@@ -88,8 +88,10 @@ importFromScraper = (callback)->
         st.save()
           
     routes.on 'end', ->
-        routes.removeAllListeners()
-        callback null
+        # FIXME This kills off the last route!
+
+        #routes.removeAllListeners()
+        #callback null
 
     routes.scrape()
 
