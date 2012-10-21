@@ -69,9 +69,15 @@ createTimeFilter = (options={}) ->
     StopTimes.find { 'stop.location': { $nearSphere: [longitude, latitude], $maxDistance: distance }, days: dayOfWeek date }, (err, times) ->
         callback null, _(times).chain().map(transformStopTimes createTimeFilter(opts)).filter((t) -> t.times.length > 0).value()
 
+stopsCache = undefined
 @stops = (callback) ->
-    Stop.find().sort('longName', 'ascending').exec (err, stops) ->
-        callback null, stops.map transformStop
+    if stopsCache is undefined
+        Stop.find().sort('longName', 'ascending').exec (err, stops) ->
+            stopsCache = stops.map transformStop
+            callback null, stopsCache
+
+    else
+        callback null, stopsCache
 
 stoppedyStop = @stop = (stopId, options, callback) ->
     opts = _.defaults options,
