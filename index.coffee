@@ -6,6 +6,10 @@ moment  = require 'moment'
 
 api     = require './lib/api'
 
+mongoose = require 'mongoose'
+connection = mongoose.createConnection('mongodb://localhost/buslog')
+locationLogger = (require './lib/log').createLogger connection
+
 # Setup configuration
 app.use express.errorHandler { showStacktrace: true, dumpExceptions: true }
 app.use express.logger 'dev'
@@ -72,6 +76,8 @@ app.get '/nearest', location, (req, res) ->
         res.json nearest
 
 app.get '/buses', [location, timeRange], (req, res) ->
+    locationLogger req.query
+
     api.nearestRoutes req.params.latitude, req.params.longitude, req.params, (err, times) ->
         res.json times
 
