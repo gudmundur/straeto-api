@@ -11,11 +11,21 @@ connection = mongoose.createConnection(env?.MONGO_URL or 'mongodb://localhost/bu
 
 EARTH_RADIUS = 6367.5 # Mean radius for Iceland in km
 
-dayOfWeek = (date) ->
-    # TODO
-    # a) Handling for holidays
-    weekdays = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
-    weekdays[date.getDay()]
+
+WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+
+HOLIDAYS = {
+    '2013-03-28': 'sun', # Skírdagur
+    '2013-03-29': 'sun', # Föstudagurinn langi
+    '2013-04-01': 'sun'  # Annar í páskum
+}
+
+@dayOfWeek = dayOfWeek = (date) ->
+    iso = (moment date).format 'YYYY-MM-DD'
+    if iso of HOLIDAYS
+        return HOLIDAYS[iso]
+
+    WEEKDAYS[date.getDay()]
 
 transformStop = (s) ->
     stop = s.toObject()
@@ -126,7 +136,7 @@ transformBetween = (r) ->
         routes = (_ uniqueRoutes).map (r) ->
             stopIds = (_ r.stops).map (s) -> s.stopId
 
-            fromStop = (_ fromStopIds).find (s) -> s in stopIds 
+            fromStop = (_ fromStopIds).find (s) -> s in stopIds
             toStop = (_ toStopIds).find (s) -> s in stopIds
 
             fromIdx = stopIds.indexOf fromStop
@@ -153,5 +163,5 @@ transformBetween = (r) ->
             callback undefined, route
 
     @between from, to, options, (err, routes) ->
-        async.map routes, process, (err, routes) -> 
+        async.map routes, process, (err, routes) ->
             callback undefined, routes
