@@ -17,7 +17,8 @@ WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 HOLIDAYS = {
     '2013-03-28': 'sun', # Skírdagur
     '2013-03-29': 'sun', # Föstudagurinn langi
-    '2013-04-01': 'sun'  # Annar í páskum
+    '2013-04-01': 'sun', # Annar í páskum
+    '2013-05-01': 'sun'  # Fyrsti maí
 }
 
 @dayOfWeek = dayOfWeek = (date) ->
